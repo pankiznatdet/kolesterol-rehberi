@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Kolesterol Rehberi</title>
+
+<!-- PWA / iOS meta tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kolesterol">
+<meta name="theme-color" content="#1b4332">
+
+<!-- PWA Manifest inline -->
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Kolesterol%20Rehberi%22%2C%22short_name%22%3A%22Kolesterol%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231b4332%22%2C%22theme_color%22%3A%22%231b4332%22%7D">
+
+<!-- Apple touch icon (inline SVG as data URI) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231b4332'/%3E%3Ctext y='.9em' font-size='72' x='14'%3E%F0%9F%AB%80%3C/text%3E%3C/svg%3E">
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --green-dark: #1b4332;
+    --green-mid: #2d6a4f;
+    --green-light: #40916c;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+
+  body {
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    background: #f7f7f2;
+    overscroll-behavior: none;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(160deg, var(--green-dark) 0%, var(--green-light) 100%);
+    padding: calc(var(--safe-top) + 20px) 20px 20px;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .header-icon { font-size: 28px; }
+  .header-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+
+  /* SEARCH */
+  .search-wrap { position: relative; }
+  .search-wrap svg {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    opacity: 0.5; pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    padding: 11px 16px 11px 38px;
+    border-radius: 14px;
+    border: none;
+    font-size: 15px;
+    background: rgba(255,255,255,0.18);
+    color: white;
+    outline: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .search-input::placeholder { color: rgba(255,255,255,0.6); }
+
+  /* CATEGORY TABS */
+  .tabs-wrap {
+    background: white;
+    overflow-x: auto;
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px;
+    scrollbar-width: none;
+    border-bottom: 1px solid #eee;
+  }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tab {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #e0e0e0;
+    background: white;
+    color: #666;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .tab.active {
+    background: var(--green-dark);
+    border-color: var(--green-dark);
+    color: white;
+    font-weight: 600;
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 14px 14px calc(var(--safe-bottom) + 30px);
+  }
+
+  .section { margin-bottom: 22px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .section-bar { width: 4px; height: 20px; border-radius: 2px; }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .section-count {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    color: white;
+    margin-left: auto;
+  }
+
+  .item {
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border-left: 3px solid;
+  }
+  .item-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 5px;
+  }
+  .item-note {
+    font-size: 11px;
+    font-weight: 400;
+    margin-left: 6px;
+  }
+  .methods { display: flex; flex-wrap: wrap; gap: 4px; }
+  .method {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.65);
+    color: #444;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
+  }
+  .empty-icon { font-size: 44px; margin-bottom: 12px; }
+
+  /* FOOTER NOTE */
+  .footer-note {
+    background: #fff8e1;
+    border-left: 3px solid #f59e0b;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* INSTALL BANNER */
+  .install-banner {
+    display: none;
+    position: fixed;
+    bottom: calc(var(--safe-bottom) + 16px);
+    left: 14px; right: 14px;
+    background: var(--green-dark);
+    color: white;
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 13px;
+    z-index: 999;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    align-items: center;
+    gap: 10px;
+  }
+  .install-banner.show { display: flex; }
+  .install-text { flex: 1; line-height: 1.5; }
+  .install-text strong { display: block; font-size: 14px; }
+  .install-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="header-icon">🫀</span>
+    <div>
+      <div class="header-title">Kolesterol Rehberi</div>
+      <div class="header-sub">80+ gıda · Pişirme yöntemleriyle</div>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input class="search-input" id="searchInput" type="search" placeholder="Gıda ara... (somon, patates...)" autocomplete="off" autocorrect="off">
+  </div>
+</div>
+
+<div class="tabs-wrap" id="tabsWrap"></div>
+
+<div class="content" id="content"></div>
+
+<!-- iOS Install Banner -->
+<div class="install-banner" id="installBanner">
+  <div>📲</div>
+  <div class="install-text">
+    <strong>Ana ekrana ekle</strong>
+    Paylaş → "Ana Ekrana Ekle" ile uygulama gibi kullan
+  </div>
+  <button class="install-close" id="installClose">×</button>
+</div>
+
+<script>
+const DATA = [
+  {
+    cat: "🥣 Tahıllar & Baklagiller", color: "#e8f5e9", accent: "#2e7d32",
+    items: [
+      { n: "Yulaf ezmesi", m: ["Sütlü pişirme","Su ile lapa"], note: "⭐ LDL düşürücü şampiyon" },
+      { n: "Bulgur", m: ["Pilav","Köfte","Salata"] },
+      { n: "Kinoa", m: ["Haşlama","Pilav","Salata"] },
+      { n: "Tam buğday ekmeği", m: ["Tost","Sandviç"], note: "Beyaz ekmeğe tercih et" },
+      { n: "Tam tahıllı makarna", m: ["Haşlama + zeytinyağlı sos"] },
+      { n: "Esmer pirinç", m: ["Pilav","Çorba"], note: "Beyaz pirince tercih et" },
+      { n: "Çavdar ekmeği", m: ["Tost","Sandviç"] },
+      { n: "Mercimek", m: ["Çorba","Yemek","Salata"], note: "⭐ Çözünür lif deposu" },
+      { n: "Nohut", m: ["Haşlama","Fırın","Salata","Humus"] },
+      { n: "Kuru fasulye", m: ["Haşlama","Zeytinyağlı yemek"] },
+      { n: "Barbunya", m: ["Zeytinyağlı","Haşlama"] },
+      { n: "Börülce", m: ["Zeytinyağlı","Salata"] },
+      { n: "Fava fasulyesi", m: ["Haşlama","Zeytinyağlı"] },
+    ]
+  },
+  {
+    cat: "🐟 Et & Protein", color: "#e3f2fd", accent: "#1565c0",
+    items: [
+      { n: "Somon", m: ["Fırın","Izgara","Buharda"], note: "⭐ Omega-3 şampiyonu" },
+      { n: "Uskumru", m: ["Fırın","Izgara","Tava (az yağ)"], note: "⭐ Omega-3 yüksek" },
+      { n: "Sardalya", m: ["Fırın","Izgara"], note: "⭐ Omega-3 yüksek" },
+      { n: "Hamsi", m: ["Fırın","Izgara","Buğulama"], note: "⭐ Omega-3 yüksek" },
+      { n: "Çipura / Levrek", m: ["Fırın","Buğulama","Izgara"] },
+      { n: "Ton balığı", m: ["Doğal suda konserve","Salata"], note: "Yağlı olanı değil" },
+      { n: "Tavuk göğsü", m: ["Fırın","Izgara","Haşlama","Buharda"], note: "Derisi alınmış" },
+      { n: "Hindi göğsü", m: ["Fırın","Izgara","Haşlama"], note: "Derisi alınmış" },
+      { n: "Dana bonfile", m: ["Izgara","Fırın"], note: "Haftada max 1–2 kez, 120g" },
+      { n: "Yumurta", m: ["Haşlama","Rafadan","Sahanda (az yağ)","Menemen"], note: "Haftada 4–5 adet" },
+    ]
+  },
+  {
+    cat: "🥦 Sebzeler", color: "#f1f8e9", accent: "#558b2f",
+    items: [
+      { n: "Brokoli", m: ["Buharda","Fırın","Zeytinyağlı sote"] },
+      { n: "Kabak", m: ["Zeytinyağlı yemek","Fırın","Izgara","Dolma"] },
+      { n: "Patlıcan", m: ["Fırın","Izgara","Zeytinyağlı"], note: "Kızartma değil" },
+      { n: "Biber", m: ["Fırın","Izgara","Dolma","Çiğ"] },
+      { n: "Domates", m: ["Çiğ","Fırın","Salça"] },
+      { n: "Havuç", m: ["Çiğ","Haşlama","Fırın","Çorba"] },
+      { n: "Ispanak", m: ["Zeytinyağlı","Buharda","Çiğ salata"] },
+      { n: "Pazı", m: ["Zeytinyağlı","Buharda"] },
+      { n: "Lahana", m: ["Zeytinyağlı","Buharda","Çiğ salata"] },
+      { n: "Karnabahar", m: ["Fırın","Buharda","Zeytinyağlı"] },
+      { n: "Kereviz", m: ["Zeytinyağlı","Çorba","Salata"] },
+      { n: "Enginar", m: ["Zeytinyağlı","Haşlama","Fırın"], note: "⭐ Karaciğer & kolesterol" },
+      { n: "Taze fasulye", m: ["Zeytinyağlı","Buharda"] },
+      { n: "Bezelye", m: ["Haşlama","Zeytinyağlı","Çorba"] },
+      { n: "Bamya", m: ["Zeytinyağlı","Fırın"] },
+      { n: "Marul / Roka", m: ["Çiğ salata"] },
+      { n: "Semizotu", m: ["Zeytinyağlı","Salata"], note: "⭐ Omega-3 içerir" },
+      { n: "Salatalık", m: ["Çiğ","Cacık"] },
+      { n: "Soğan", m: ["Çiğ","Pişmiş","Fırın"] },
+      { n: "Sarımsak", m: ["Çiğ (en etkili)","Az pişmiş"], note: "⭐ LDL düşürücü" },
+      { n: "Pırasa", m: ["Zeytinyağlı","Çorba","Fırın"] },
+      { n: "Kuşkonmaz", m: ["Fırın","Izgara","Buharda"] },
+      { n: "Mantar", m: ["Izgara","Fırın","Sote (az yağ)"] },
+      { n: "Turp", m: ["Çiğ","Salata"] },
+      { n: "Patates", m: ["Haşlama","Kabuklu fırın"], note: "Kızartma değil, ölçülü" },
+      { n: "Tatlı patates", m: ["Fırın","Haşlama"], note: "Patates'ten daha iyi" },
+    ]
+  },
+  {
+    cat: "🍎 Meyveler", color: "#fce4ec", accent: "#c62828",
+    items: [
+      { n: "Elma", m: ["Çiğ (kabuklu)","Fırında"], note: "⭐ Pektin = LDL bağlar" },
+      { n: "Armut", m: ["Çiğ (kabuklu)"], note: "⭐ Lif deposu" },
+      { n: "Yaban mersini", m: ["Çiğ","Yulafa ekle","Smoothie"], note: "⭐ Antioksidan" },
+      { n: "Çilek", m: ["Çiğ","Smoothie"] },
+      { n: "Nar", m: ["Tane","Taze sıkılmış"], note: "⭐ Güçlü antioksidan" },
+      { n: "Avokado", m: ["Çiğ","Ekmek üzeri","Salata"], note: "⭐ HDL yükseltir" },
+      { n: "Portakal / Mandalina", m: ["Çiğ","Taze sıkılmış"] },
+      { n: "Greyfurt", m: ["Çiğ"], note: "İlaç kullanıyorsan doktora sor" },
+      { n: "Kivi", m: ["Çiğ"] },
+      { n: "Muz", m: ["Çiğ","Smoothie"], note: "Ölçülü (şeker içerir)" },
+      { n: "Karpuz / Kavun", m: ["Çiğ"], note: "Mevsimlik, ölçülü" },
+      { n: "Üzüm", m: ["Çiğ"], note: "Ölçülü" },
+      { n: "Erik / Kayısı", m: ["Çiğ"] },
+    ]
+  },
+  {
+    cat: "🥛 Süt Ürünleri", color: "#fff8e1", accent: "#f57f17",
+    items: [
+      { n: "Yağsız yoğurt", m: ["Direkt","Cacık","Salata sosu"], note: "⭐ Probiyotik" },
+      { n: "Yunan yoğurdu (yağsız)", m: ["Direkt","Meyveyle"] },
+      { n: "Kefir (yağsız)", m: ["İçecek"], note: "⭐ Bağırsak + kolesterol" },
+      { n: "Yağsız süt", m: ["İçecek","Yulafa ekleme"] },
+      { n: "Badem sütü", m: ["İçecek","Smoothie","Yulafa ekleme"] },
+      { n: "Yulaf sütü", m: ["İçecek","Kahveye"] },
+      { n: "Az yağlı beyaz peynir", m: ["Kahvaltı","Salata"], note: "Günde 30–40g" },
+      { n: "Lor / Süzme peynir", m: ["Kahvaltı","Tost"], note: "Az tuzlu tercih et" },
+    ]
+  },
+  {
+    cat: "🥜 Kuruyemiş & Tohumlar", color: "#efebe9", accent: "#4e342e",
+    items: [
+      { n: "Ceviz", m: ["Çiğ","Yulafa / salata ekle"], note: "⭐ HDL yükseltir, Omega-3" },
+      { n: "Badem", m: ["Çiğ","Tost edilmiş (tuzsuz)"], note: "⭐ LDL düşürür" },
+      { n: "Fındık", m: ["Çiğ","Tuzsuz"] },
+      { n: "Kaju", m: ["Çiğ","Tuzsuz"], note: "Ölçülü" },
+      { n: "Keten tohumu (öğütülmüş)", m: ["Yulafa ekle","Yoğurda ekle","Smoothie"], note: "⭐ Omega-3 + lif" },
+      { n: "Chia tohumu", m: ["Yoğurda ekle","Smoothie","Su ile"], note: "⭐ Omega-3 + lif" },
+      { n: "Kabak çekirdeği", m: ["Çiğ","Fırında (tuzsuz)"] },
+      { n: "Ayçiçek çekirdeği", m: ["Çiğ","Tuzsuz"], note: "Ölçülü" },
+    ]
+  },
+  {
+    cat: "🫒 Yağlar & Soslar", color: "#f3e5f5", accent: "#6a1b9a",
+    items: [
+      { n: "Zeytinyağı (sızma)", m: ["Çiğ","Düşük ısıda pişirme"], note: "⭐ Ana yağ kaynağın" },
+      { n: "Avokado yağı", m: ["Yüksek ısıda pişirme","Salata"] },
+      { n: "Hummus", m: ["Dip","Sandviç sosu"] },
+      { n: "Tahin", m: ["Sos","Salata"], note: "Ölçülü" },
+      { n: "Limon suyu", m: ["Salata sosu","Marinasyon"], note: "⭐ Hazır sos yerine" },
+      { n: "Elma sirkesi", m: ["Salata sosu","Marinasyon"] },
+    ]
+  },
+  {
+    cat: "🍵 İçecekler", color: "#e8f5e9", accent: "#1b5e20",
+    items: [
+      { n: "Yeşil çay", m: ["Sıcak","Soğuk (şekersiz)"], note: "⭐ LDL koruyucu" },
+      { n: "Bitki çayları", m: ["Sıcak (şekersiz)"], note: "Ihlamur, kuşburnu, adaçayı" },
+      { n: "Su", m: ["Günde 8–10 bardak"], note: "⭐ Temel" },
+      { n: "Filtre kahve", m: ["Az sütlü ya da sade"], note: "Günde max 2 fincan" },
+      { n: "Taze meyve suyu", m: ["Taze sıkılmış"], note: "Ölçülü, şeker içerir" },
+    ]
+  },
+  {
+    cat: "🍫 Kaçamaklar", color: "#fafafa", accent: "#37474f",
+    items: [
+      { n: "Bitter çikolata (%70+)", m: ["Çiğ"], note: "Günde 1–2 kare" },
+      { n: "Bal", m: ["Yulaf üzeri","Çay içine"], note: "Günde 1 tatlı kaşığı" },
+      { n: "Kuru meyve", m: ["Çiğ"], note: "Günde 3–4 adet, şekersiz" },
+    ]
+  }
+];
+
+let activeCategory = "Tümü";
+let searchQuery = "";
+
+function render() {
+  const content = document.getElementById("content");
+  const filtered = DATA
+    .filter(cat => activeCategory === "Tümü" || cat.cat === activeCategory)
+    .map(cat => ({
+      ...cat,
+      items: cat.items.filter(item =>
+        item.n.toLowerCase().includes(searchQuery) ||
+        (item.m || []).some(m => m.toLowerCase().includes(searchQuery)) ||
+        (item.note || "").toLowerCase().includes(searchQuery)
+      )
+    }))
+    .filter(cat => cat.items.length > 0);
+
+  if (filtered.length === 0) {
+    content.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>"${searchQuery}" için sonuç bulunamadı.</p></div>`;
+    return;
+  }
+
+  content.innerHTML = filtered.map(cat => `
+    <div class="section">
+      <div class="section-header">
+        <div class="section-bar" style="background:${cat.accent}"></div>
+        <div class="section-title" style="color:${cat.accent}">${cat.cat}</div>
+        <div class="section-count" style="background:${cat.accent}">${cat.items.length}</div>
+      </div>
+      ${cat.items.map(item => `
+        <div class="item" style="background:${cat.color};border-left-color:${cat.accent}">
+          <div class="item-name">
+            ${item.n}
+            ${item.note ? `<span class="item-note" style="color:${cat.accent}">${item.note}</span>` : ""}
+          </div>
+          <div class="methods">
+            ${item.m.map(m => `<span class="method">${m}</span>`).join("")}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `).join("") + `
+    <div class="footer-note">
+      <strong style="color:#d97706">💡 Altın kural:</strong> Gıdanın kendisi değil, <strong>pişirme yöntemi</strong> belirleyici. Kızartma yerine fırın, haşlama veya ızgara. Tereyağı yerine zeytinyağı.
+    </div>
+  `;
+}
+
+function renderTabs() {
+  const wrap = document.getElementById("tabsWrap");
+  const cats = ["Tümü", ...DATA.map(d => d.cat)];
+  wrap.innerHTML = cats.map(cat => `
+    <button class="tab ${cat === activeCategory ? "active" : ""}" data-cat="${cat}">
+      ${cat === "Tümü" ? "🌿 Tümü" : cat}
+    </button>
+  `).join("");
+  wrap.querySelectorAll(".tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeCategory = btn.dataset.cat;
+      renderTabs();
+      render();
+      document.getElementById("content").scrollIntoView({ behavior: "smooth" });
+    });
+  });
+}
+
+document.getElementById("searchInput").addEventListener("input", e => {
+  searchQuery = e.target.value.toLowerCase().trim();
+  render();
+});
+
+// Install banner (iOS)
+const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+const isStandalone = window.navigator.standalone;
+const dismissed = localStorage.getItem("install_dismissed");
+
+if (isIOS && !isStandalone && !dismissed) {
+  setTimeout(() => {
+    document.getElementById("installBanner").classList.add("show");
+  }, 2500);
+}
+
+document.getElementById("installClose").addEventListener("click", () => {
+  document.getElementById("installBanner").classList.remove("show");
+  localStorage.setItem("install_dismissed", "1");
+});
+
+// Service Worker
+if ("serviceWorker" in navigator) {
+  const swCode = `
+    const CACHE = "kolesterol-v1";
+    const ASSETS = [location.href];
+    self.addEventListener("install", e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+    });
+    self.addEventListener("fetch", e => {
+      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+    });
+  `;
+  const blob = new Blob([swCode], { type: "application/javascript" });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+renderTabs();
+render();
+</script>
+</body>
+</html>
